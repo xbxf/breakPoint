@@ -1,7 +1,4 @@
-/**
- *
- * @type {{__show: UP.__show, __msg: {}, __init: UP.__init, __input: {}}}
- */
+/*分片上传*/
 let UP = {
     // 定义提示信息
     __msg: {
@@ -88,9 +85,10 @@ let UP = {
         let file_obj = that.__fileInfo(self);
 
         if (file_obj.state === 'uploading') {
-            file_obj.fileThat.val('继续上传').attr('data-state', 'paused');
-            file_obj.progress.text(that.__msg['paused'] + window.localStorage.getItem(file_obj.filename + '_p') + '%');
-            that.__input.isPaused = 1;
+            // file_obj.fileThat.val('继续上传').attr('data-state', 'paused');
+            // file_obj.progress.text(that.__msg['paused'] + window.localStorage.getItem(file_obj.filename + '_p') + '%');
+            // that.__input.isPaused = 1;
+            that.__stopUpload(file_obj);
         } else if (file_obj.state === 'paused' || file_obj.state === 'default') {
             let c = window.localStorage.getItem(file_obj.filename + '_chunk');
             if ((file_obj.chunks() - 1) == c) {
@@ -106,6 +104,7 @@ let UP = {
             that.__startUpload('first');
         }
     },
+    // 开始上传文件
     __startUpload: function (times) {
         let that = this;
         let file_obj = that.__input.file_obj;
@@ -115,7 +114,7 @@ let UP = {
         file_obj.chunk = parseInt(file_obj.chunk, 10);
         // console.log(file_obj.chunk);return;
 
-        console.log('当前第：', + (file_obj.chunk + 1) + '片');
+        console.log('当前第：', +(file_obj.chunk + 1) + '片');
         var isLastChunk = (file_obj.chunk == (file_obj.chunks() - 1) ? 1 : 0);
 
         // var isLastChunk = (file_obj.chunk == (file_obj.chunks() - 1) ? 1 : 0);
@@ -149,8 +148,6 @@ let UP = {
                 res = JSON.parse(res);
                 if (res.status === 200) {
                     window.localStorage.setItem(file_obj.filename + '_p', percent);
-                    console.log('---->'+file_obj.chunks());
-                    console.log('====>'+file_obj.chunk);
                     if (file_obj.chunk === (file_obj.chunks() - 1)) {
                         file_obj.progress.text(that.__msg['done']);
                         file_obj.fileThat.val('已经上传').prop('disabled', true).css('cursor', 'not-allowed');
@@ -177,6 +174,14 @@ let UP = {
             }
         });
     },
+    // 停止上传按钮状态
+    __stopUpload: function (file_obj) {
+        let that = this;
+        file_obj.fileThat.val('继续上传').attr('data-state', 'paused');
+        file_obj.progress.text(that.__msg['paused'] + window.localStorage.getItem(file_obj.filename + '_p') + '%');
+        that.__input.isPaused = 1;
+    },
+    // 获取dom节点某个文件
     __findTheFile: function (filename) {
         let files = $(this.__input.param.myFile)[0].files,
             theFile;
